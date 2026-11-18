@@ -1,44 +1,59 @@
-# YouTrack Docker
+# YouTrack on Podman
 
-Local YouTrack installation using Docker Compose.
+Local YouTrack, running rootless with Podman.
 
-## Setup
+## 1. Install Podman (one time)
 
 ```bash
-mkdir -p data conf logs backups
-sudo chown -R 13001:13001 data conf logs backups
-docker compose up -d
+sudo apt update
+sudo apt install podman podman-compose
 ```
 
-Open:
+## 2. Allow it to start on boot (one time)
 
-```text
-http://192.168.2.200:8081
+```bash
+loginctl enable-linger $USER
 ```
+
+## 3. Set your IP and port
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` and set `YOUTRACK_HOST` to your machine's IP (and `YOUTRACK_PORT`
+if you don't want 8081).
+
+## 4. Start YouTrack
+
+```bash
+./setup.sh
+```
+
+The script prints the URL to open once it's up.
 
 ## Backup
 
-Backups are stored in:
-
-```text
-./backups/
-```
-
-Backup rotation: 1
-
-Sync `backups/` to Google Drive.
+Backups are saved in `./backups/`. Sync that folder to Google Drive yourself.
+Backup rotation: 1.
 
 ## Restore
 
-1. Copy the backup from Google Drive to `./backups/`.
-2. Create directories and permissions:
+1. Copy the backup file from Google Drive into `./backups/`.
+2. Run:
 
 ```bash
-mkdir -p data conf logs backups
-sudo chown -R 13001:13001 data conf logs backups
-docker compose up -d
+./setup.sh
 ```
 
-3. Open `http://192.168.2.200:8081`.
+3. Open the URL the script prints.
 4. Use the Configuration Wizard to restore the backup.
-5. Use the same or newer YouTrack version.
+5. Use the same or a newer YouTrack version.
+
+## Other commands
+
+```bash
+podman-compose down      # stop YouTrack
+podman-compose logs -f   # view logs
+podman ps                # list running containers
+```
