@@ -1,0 +1,26 @@
+# Podman Quadlet template. install.sh fills in @YOUTRACK_HOST@ and @YOUTRACK_PORT@
+# and copies the result to ~/.config/containers/systemd/youtrack.container
+[Unit]
+Description=YouTrack (rootless Podman)
+Wants=network-online.target
+After=network-online.target
+
+[Container]
+Image=docker.io/jetbrains/youtrack:2026.2.19840
+ContainerName=youtrack
+# Map host user to container UID/GID 13001 (the user YouTrack runs as)
+# so bind mounts need no sudo chown.
+UserNS=keep-id:uid=13001,gid=13001
+PublishPort=@YOUTRACK_PORT@:8080/tcp
+Environment="YOUTRACK_BASE_URL=http://@YOUTRACK_HOST@:@YOUTRACK_PORT@"
+Volume=%h/.local/share/youtrack/data:/opt/youtrack/data
+Volume=%h/.local/share/youtrack/conf:/opt/youtrack/conf
+Volume=%h/.local/share/youtrack/logs:/opt/youtrack/logs
+Volume=%h/.local/share/youtrack/backups:/opt/youtrack/backups
+AutoUpdate=registry
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target
